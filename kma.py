@@ -1,6 +1,7 @@
 import re
 import datetime
 import requests
+import sys
 from bs4 import BeautifulSoup
 
 today = datetime.date.today() # 오늘 날짜
@@ -10,12 +11,16 @@ next = today + datetime.timedelta(days=1) # 내일 날짜
 try: response  = requests.get("https://www.weather.go.kr/w/eqk-vol/search/korea.do?schOption=&startTm="+str(yester)+"endTm="+str(today)+"&dpType=a") # 기상청 지진조회
 except requests.exceptions.Timeout as errd:
    print("Timeout Error:", errd)
+   sys.exit(0)
 except requests.exceptions.ConnectionError as errc:
    print("Error Connecting: ", errc)
+   sys.exit(0)
 except requests.exceptions.HTTPError as errb:
    print("Http Error:", errb)
+   sys.exit(0)
 except requests.exceptions.RequestException as erra:
    print("AnyException: ", erra)
+   sys.exit(0)
    
 soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -58,12 +63,16 @@ class KTTS:
       )
       except requests.exceptions.Timeout as errd:
          print("Timeout Error: ", errd)
+         sys.exit(0)
       except requests.exceptions.ConnectionError as errd:
          print("Error Connnecting: ", errc)
+         sys.exit(0)
       except requests.exceptions.HTTPError as errb:
          print("HTTP Error: ", errb)
+         sys.exit(0)
       except requests.exceptions.RequestException as erra:
          print("AnyException :", erra)
+         sys.exit(0)
 
 
    def save(self, filename="output.mp3"):
@@ -72,5 +81,5 @@ class KTTS:
 
 
 if __name__ == '__main__':
-   tts = KTTS(origin_time + "에" + address + "에서 규모" + mag + "의 지진이 발생하였습니다. 최대진도는" + mmi2 + "입니다.")
+   tts = KTTS(origin_time + "에" + address + "에서 규모" + mag + "의 지진이 발생하였습니다. 최대진도는" + mmi + "입니다.")
    tts.save("tts.mp3")
