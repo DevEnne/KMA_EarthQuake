@@ -3,9 +3,20 @@ import datetime
 import requests
 from bs4 import BeautifulSoup
 
-today = datetime.date.today()
+today = datetime.date.today() # 오늘 날짜
+yester = today - datetime.timedelta(days=1) # 어제 날짜
+next = today + datetime.timedelta(days=1) # 내일 날짜
 
-response  = requests.get("https://www.weather.go.kr/w/eqk-vol/search/korea.do?schOption=&startTm=2022-01-01endTm="+str(today)+"&dpType=a")
+try: response  = requests.get("https://www.weather.go.kr/w/eqk-vol/search/korea.do?schOption=&startTm="+str(yester)+"endTm="+str(today)+"&dpType=a") # 기상청 지진조회
+except requests.exceptions.Timeout as errd:
+   print("Timeout Error:", errd)
+except requests.exceptions.ConnectionError as errc:
+   print("Error Connecting: ", errc)
+except requests.exceptions.HTTPError as errb:
+   print("Http Error:", errb)
+except requests.exceptions.RequestException as erra:
+   print("AnyException: ", erra)
+   
 soup = BeautifulSoup(response.content, 'html.parser')
 
 
@@ -21,28 +32,23 @@ for tr in first: # #excel_body > tbody > tr:nth-child(1) 항목 검색
             depth = tds[-7].text + "km"
             mmi = tds[-6].text
             address = tds[-3].text
+            Lat = tds[-5].text # 위도
+            long = tds[-4].text # 경도
 
 # KAKAO TTS 대응 ( 숫자 변환 )
 
-mmi = mmi.replace('Ⅰ','1') # JMA 0
-mmi = mmi.replace('Ⅱ','2') # JMA 0 ~ 1
-mmi = mmi.replace('Ⅲ','3') # JMA 1 ~ 2
-mmi = mmi.replace('Ⅳ','4') # JMA 2 ~ 3
-mmi = mmi.replace('Ⅴ','5') # JMA 3 ~ 4
-mmi = mmi.replace('Ⅵ','6') # JMA 4 ~ 5-
-mmi = mmi.replace('Ⅶ','7') # JMA 5+ ~ 6-
-mmi = mmi.replace('Ⅷ','8') # JMA 6- ~ 6+
-mmi = mmi.replace('Ⅸ','9') # JMA 6+ ~ 7
-mmi = mmi.replace('Ⅹ','10') # JMA 7
+def switch(mmir):
+       mmi2 = { "Ⅰ" : "1", "Ⅱ" : "2", "Ⅲ" : "3", "Ⅳ" : "4", "Ⅴ" : "5", "Ⅵ" : "6", "Ⅶ" : "7", "Ⅷ" : "8", "Ⅸ" : "9", "Ⅹ" : "10"  }.get(mmir, "진도 불명")
+       print (origin_time,"에", address + "에서 규모",mag,"깊이", depth, "최대진도", mmi2 + "의 지진이 발생하였습니다.")
 
-print (origin_time,"에", address + "에서 규모",mag,"깊이", depth + "최대진도", mmi + "의 지진이 발생하였습니다.")
+switch(mmi)
 
 REST_API_KEY = "SECRET"
 
 class KTTS:
 
    def __init__(self, text, API_KEY=REST_API_KEY):
-      self.resp = requests.post(
+      try: self.resp = requests.post(
          url="https://kakaoi-newtone-openapi.kakao.com/v1/synthesize",
          headers={
             "Content-Type": "application/xml",
@@ -50,6 +56,15 @@ class KTTS:
          },
          data=f"<speak>{text}</speak>".encode('utf-8')
       )
+      except requests.exceptions.Timeout as errd:
+         print("Timeout Error: ", errd)
+      except requests.exceptions.ConnectionError as errd:
+         print("Error Connnecting: ", errc)
+      except requests.exceptions.HTTPError as errb:
+         print("HTTP Error: ", errb)
+      except requests.exceptions.RequestException as erra:
+         print("AnyException :", erra)
+
 
    def save(self, filename="output.mp3"):
       with open(filename, "wb") as file:
@@ -57,5 +72,5 @@ class KTTS:
 
 
 if __name__ == '__main__':
-   tts = KTTS(origin_time + "에" + address + "에서 규모" + mag + "의 지진이 발생하였습니다. 최대진도는" + mmi + "입니다.")
+   tts = KTTS(origin_time + "에" + address + "에서 규모" + mag + "의 지진이 발생하였습니다. 최대진도는" + mmi2 + "입니다.")
    tts.save("tts.mp3")
