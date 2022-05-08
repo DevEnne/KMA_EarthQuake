@@ -72,7 +72,7 @@ class KTTS:
       except requests.exceptions.Timeout as errd:
          print("Timeout Error: ", errd)
          sys.exit(0)
-      except requests.exceptions.ConnectionError as errd:
+      except requests.exceptions.ConnectionError as errc:
          print("Error Connnecting: ", errc)
          sys.exit(0)
       except requests.exceptions.HTTPError as errb:
