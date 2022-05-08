@@ -40,11 +40,19 @@ for tr in first: # #excel_body > tbody > tr:nth-child(1) 항목 검색
             Lat = tds[-5].text # 위도
             long = tds[-4].text # 경도
 
+# 미소지진 분류
+
+if mag < str(2):
+       type = "미소지진"
+else:
+       type = "지진"
+
 # KAKAO TTS 대응 ( 숫자 변환 )
 
 def switch(mmir):
+       global mmi2
        mmi2 = { "Ⅰ" : "1", "Ⅱ" : "2", "Ⅲ" : "3", "Ⅳ" : "4", "Ⅴ" : "5", "Ⅵ" : "6", "Ⅶ" : "7", "Ⅷ" : "8", "Ⅸ" : "9", "Ⅹ" : "10"  }.get(mmir, "진도 불명")
-       print (origin_time,"에", address + "에서 규모",mag,"깊이", depth, "최대진도", mmi2 + "의 지진이 발생하였습니다.")
+       print (origin_time,"에", address + "에서 규모",mag,"깊이", depth, "최대진도", mmi2 + "의", type, "이 발생하였습니다.")
 
 switch(mmi)
 
@@ -81,5 +89,5 @@ class KTTS:
 
 
 if __name__ == '__main__':
-   tts = KTTS(origin_time + "에" + address + "에서 규모" + mag + "의 지진이 발생하였습니다. 최대진도는" + mmi + "입니다.")
+   tts = KTTS(origin_time + "에" + address + "에서 규모" + mag + "에" + type + "이 발생하였습니다. 최대진도는" + mmi2 + "입니다.")
    tts.save("tts.mp3")
