@@ -1,7 +1,10 @@
+from audioop import add
 import re
 import datetime
 import requests
 import sys
+import json
+from collections import OrderedDict
 from bs4 import BeautifulSoup
 
 today = datetime.date.today() # 오늘 날짜
@@ -56,6 +59,17 @@ def switch(mmir):
 
 switch(mmi)
 
+# JSON 변환
+KMA_Data = OrderedDict()
+
+KMA_Data["time"] = origin_time
+KMA_Data["info"] = {'address' : address, 'mag' : mag, 'depth' : depth, 'mmi' : mmi2, 'Lat' : Lat, 'long' : long}
+KMA_Data['type'] = type
+
+with open('kma.json', 'w', encoding="utf-8") as make_file:
+   json.dump(KMA_Data, make_file, ensure_ascii=False, indent="\t")
+
+# TTS 시작
 REST_API_KEY = "SECRET"
 
 class KTTS:
